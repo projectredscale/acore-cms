@@ -3,6 +3,9 @@
 namespace ACore\Manager\Auth;
 
 use ACore\Manager\AcoreConnector\AcoreManagerTrait;
+use ACore\Manager\Auth\Entity\AccountAccessEntity;
+use ACore\Manager\Auth\Entity\AccountBannedEntity;
+use ACore\Manager\Auth\Entity\AccountEntity;
 
 class AuthManager {
 
