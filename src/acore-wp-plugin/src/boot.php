@@ -27,3 +27,4 @@ require_once ACORE_PATH_PLG . 'src/Hooks/User/Include.php';
 
 require_once ACORE_PATH_PLG . 'src/Hooks/WooCommerce/WooCommerce.php';
 require_once ACORE_PATH_PLG . 'src/Hooks/WooCommerce/Products.php';
+require_once ACORE_PATH_PLG . 'src/Components/RedscaleSettings/RedscaleSettings.php';

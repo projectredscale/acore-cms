@@ -195,6 +195,24 @@ class ACoreServices
 
     /**
      *
+     * @return ACore\Manager\Auth\Repository\AccountCoinsRepository
+     */
+    public function getAccountCoinsRepo()
+    {
+        return $this->emAuth->getRepository('ACore\Manager\Auth\Entity\AccountCoinsEntity');
+    }
+
+    /**
+     *
+     * @return ACore\Manager\Auth\Repository\AccountCoinsLogRepository
+     */
+    public function getAccountCoinsLogRepo()
+    {
+        return $this->emAuth->getRepository('ACore\Manager\Auth\Entity\AccountCoinsLogEntity');
+    }
+
+    /**
+     *
      * @return ACore\Manager\Character\Repository\CharacterRepository
      */
     public function getCharactersRepo()

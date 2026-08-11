@@ -6,6 +6,8 @@ use ACore\Manager\AcoreConnector\AcoreManagerTrait;
 use ACore\Manager\Auth\Entity\AccountAccessEntity;
 use ACore\Manager\Auth\Entity\AccountBannedEntity;
 use ACore\Manager\Auth\Entity\AccountEntity;
+use ACore\Manager\Auth\Entity\AccountCoinsEntity;
+use ACore\Manager\Auth\Entity\AccountCoinsLogEntity;
 
 class AuthManager {
 
@@ -43,5 +45,25 @@ class AuthManager {
     public function getAccountAccessRepo($em)
     {
         return $em->getRepository(AccountAccessEntity::class);
+    }
+
+    /**
+     *
+     * @param \Doctrine\ORM\EntityManager $em
+     * @return ACore\Manager\Auth\Repository\AccountCoinsRepository
+     */
+    public function getAccountCoinsRepo($em)
+    {
+        return $em->getRepository(AccountCoinsEntity::class);
+    }
+
+    /**
+     *
+     * @param \Doctrine\ORM\EntityManager $em
+     * @return ACore\Manager\Auth\Repository\AccountCoinsLogRepository
+     */
+    public function getAccountCoinsLogRepo($em)
+    {
+        return $em->getRepository(AccountCoinsLogEntity::class);
     }
 }
