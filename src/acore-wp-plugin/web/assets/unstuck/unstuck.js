@@ -13,7 +13,8 @@ jQuery(document).ready(function() {
                 location.reload(); // Reload after success
             },
             error: function(xhr, status, error) {
-                console.error("Unstuck failed:", error);
+                const msg = xhr.responseJSON?.message || "Unstuck failed. Try again later.";
+                alert(msg);
             }
         });
     });
