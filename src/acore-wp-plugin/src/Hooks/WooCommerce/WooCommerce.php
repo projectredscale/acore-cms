@@ -109,7 +109,7 @@ function wc_checkout_fields($fields) {
     unset($fields['billing']['billing_country']);
     unset($fields['billing']['billing_state']);
     unset($fields['billing']['billing_phone']);
-    //unset($fields['order']['order_comments']);
+    unset($fields['order']['order_comments']);
     unset($fields['billing']['billing_email']);
     return $fields;
 }
