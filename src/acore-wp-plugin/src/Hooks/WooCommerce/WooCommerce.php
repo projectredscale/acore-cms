@@ -50,6 +50,53 @@ add_action('woocommerce_email_enabled_new_order', function ($enabled, $order) {
     }
 }, 10, 2);
 */
+// The store is fully digital with instant in-game delivery. Most WooCommerce
+// transactional emails are unnecessary noise. Only keep:
+//   - Failed order (payment issues need attention)
+//   - Customer reset password (essential WordPress)
+//   - Customer new account (registration confirmation)
+//
+// Also: the container has no working sendmail; each wp_mail() call blocks for
+// 60 seconds (PHP default_socket_timeout). Re-enable any of these once a real
+// SMTP server is configured (e.g. via FluentSMTP).
+
+$disabledWcEmails = array(
+    'new_order',                     // no stock/shipping to act on
+    'cancelled_order',               // no cancellation flow for digital
+    'customer_on_hold_order',        // never used for instant delivery
+    'customer_processing_order',     // processing lasts <1 second
+    'customer_completed_order',      // site gives instant feedback
+    'customer_refunded_order',       // no refund flow for digital
+    'customer_invoice',              // redundant with site confirmation
+    'customer_note',                 // not used
+    'customer_failed_order',         // don't spam customer with failed order
+);
+
+foreach ($disabledWcEmails as $emailId) {
+    add_filter("woocommerce_email_enabled_{$emailId}", '__return_false', 20);
+}
+
+// Disable stock notifications (low stock, no stock) for digital products
+add_filter('woocommerce_should_send_low_stock_notification', '__return_false');
+add_filter( 'woocommerce_should_send_no_stock_notification', '__return_false');
+
+add_action('woocommerce_email', function($email_class) {
+    // Product backorder
+    remove_action(
+        'woocommerce_product_on_backorder_notification',
+        array($email_class, 'backorder')
+    );
+    // Low stock
+    remove_action(
+        'woocommerce_low_stock_notification',
+        array($email_class, 'low_stock')
+    );
+    // No stock
+    remove_action(
+        'woocommerce_no_stock_notification',
+        array($email_class, 'no_stock')
+    );
+});
 
 // Allow lua for digital downloads ( not used )
 add_filter('upload_mimes', function($mimetypes, $user) {
