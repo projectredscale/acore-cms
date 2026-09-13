@@ -19,6 +19,7 @@ require_once __DIR__ . "/CartValidation.php";
 require_once __DIR__ . "/Smartstone.php";
 require_once __DIR__ . "/CoinsPurchase.php";
 require_once __DIR__ . "/StoreLogin.php";
+require_once __DIR__ . "/StoreHeader.php";
 
 // Add WooCommerce customer username to edit/view order admin page
 add_action('woocommerce_admin_order_data_after_billing_address', __NAMESPACE__ . '\woo_display_order_username', 10, 1);
