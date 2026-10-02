@@ -34,14 +34,19 @@ WordPress + WooCommerce CMS for AzerothCore. Docker Compose, PHP plugin (Doctrin
 
 ## DB wiring + Doctrine facts
 
-- Auth DB = `acore_auth` @ malt MySQL `127.0.0.1:3341` (acore/acore); from the WP container: `host.docker.internal:3341`.
+- Auth DB in development = `acore_auth` @ malt MySQL `127.0.0.1:3341` (acore/acore); from the local WP
+  container that is `host.docker.internal:3341`, which is a development-only affordance and appears
+  nowhere in production. In production the CMS reaches `ac-database` (auth, character and world),
+  `ac-worldserver:7878` for SOAP and `wp-db` for WordPress, all by service name on the `redscale-net`
+  Docker network, and `ops/scripts/cms-configure.sh` writes exactly those values into the plugin's WP
+  options.
 - Runtime container `acore-cms-php-1` (PHP 8.3); plugin bind-mounted at `/var/www/html/wp-content/plugins/acore-wp-plugins/`.
 - `acore_db_auth_*` WP options are unset by default, so `ACoreServices::I()` can't reach the auth DB until configured (deployment gap, not a code bug).
 - Latent bug in `Manager/Auth/AuthManager.php`: `getAccountRepo`/`getAccountBannedRepo`/`getAccountAccessRepo` use `AccountEntity::class` etc. without `use` imports, so they resolve to the wrong `ACore\Manager\Auth\*` namespace and throw a Doctrine `MappingException`. No callers in src; latent.
 - Latent bug 2: `AuthManager::__construct` sets `entityPath = realpath(__DIR__."/../Entity/")`, which resolves to the nonexistent `src/Manager/Entity`. Fix: `realpath(__DIR__."/Entity/")`.
 - Local PHP lacks `pdo_mysql` (only pdo_sqlite), so DB-backed repo paths run only in the container.
 - `account_coins`/`account_coins_log` are owned by `mod-redscale-shop` db-auth SQL and created via dbimport. The CMS does not create them; it only verifies via read-only `CoinsPurchase::coinsTablesExist()`. `coins_NNN` SKUs credit `account_coins` on `woocommerce_payment_complete`.
-- Validating Doctrine: standalone `createAnnotationMetadataConfiguration()` fails ("not a valid entity") on PHP 8.3. Validate via the real runtime: `docker exec acore-cms-php-1 wp eval --allow-root '...'` with `AuthManager` + `host.docker.internal:3341`.
+- Validating Doctrine: standalone `createAnnotationMetadataConfiguration()` fails ("not a valid entity") on PHP 8.3. Validate via the real runtime: `docker exec acore-cms-php-1 wp eval --allow-root '...'` with `AuthManager` against the development database at `host.docker.internal:3341`.
 
 ## Common tasks
 
