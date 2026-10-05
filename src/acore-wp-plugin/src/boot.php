@@ -24,6 +24,7 @@ require_once ACORE_PATH_PLG . 'src/Hooks/Various/tgmplugin_activator.php';
 require_once ACORE_PATH_PLG . 'src/Hooks/Various/DarkMode.php';
 
 require_once ACORE_PATH_PLG . 'src/Hooks/User/Include.php';
+require_once ACORE_PATH_PLG . 'src/Hooks/User/RedscaleEmailWhitelist.php';
 
 require_once ACORE_PATH_PLG . 'src/Hooks/WooCommerce/WooCommerce.php';
 require_once ACORE_PATH_PLG . 'src/Hooks/WooCommerce/Products.php';

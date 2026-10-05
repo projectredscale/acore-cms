@@ -4,6 +4,7 @@
 
 namespace ACore\Components\RedscaleSettings;
 
+use ACore\Hooks\User\RedscaleEmailWhitelist;
 use ACore\Hooks\WooCommerce\CoinsPurchase;
 use ACore\Manager\ACoreServices;
 
@@ -48,8 +49,14 @@ class RedscaleSettings
             $tablesReady = false;
         }
 
-        if ($tablesReady && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->handleAdjustment();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // The registration whitelist is independent of the coin tables, so
+            // it is saved even when they are missing.
+            if (isset($_POST['redscale_email_whitelist_submit'])) {
+                $this->handleEmailWhitelistSave();
+            } elseif ($tablesReady) {
+                $this->handleAdjustment();
+            }
         }
 
         if (!$tablesReady) {
@@ -61,12 +68,98 @@ class RedscaleSettings
         <div class="wrap">
             <h1><?php esc_html_e('Redscale Settings', 'acore-wp-plugin') ?></h1>
             <p><?php esc_html_e('Coin balances live in the account_coins tables, created by the mod-shop db-auth SQL. Donations credit them here; the in-game shop debits them.', 'acore-wp-plugin') ?></p>
-            <?php if ($tablesReady) {
-                $this->renderAdjustmentNotice();
+            <?php
+            $this->renderAdjustmentNotice();
+            if ($tablesReady) {
                 $this->renderBalancesSection();
                 $this->renderBulkAdjustForm();
-            } ?>
+            }
+            $this->renderEmailWhitelistSection();
+            ?>
         </div>
+        <?php
+    }
+
+    /**
+     * Save the registration email whitelist. The sanitizer is the same one the
+     * registration filter reads through, so what is stored is exactly what is
+     * matched: lowercase domains, one per line, no duplicates.
+     */
+    private function handleEmailWhitelistSave()
+    {
+        check_admin_referer('redscale_email_whitelist_save', 'redscale_email_whitelist_nonce');
+
+        $raw       = isset($_POST['redscale_email_whitelist']) ? (string) wp_unslash($_POST['redscale_email_whitelist']) : '';
+        $sanitized = RedscaleEmailWhitelist::sanitize($raw);
+
+        update_option(RedscaleEmailWhitelist::OPTION, $sanitized);
+
+        $rules = RedscaleEmailWhitelist::rules();
+
+        if (!$rules) {
+            $this->setNotice('ok', __('Email whitelist saved: the list is empty, so registration accepts every email domain.', 'acore-wp-plugin'));
+            return;
+        }
+
+        $this->setNotice('ok', sprintf(
+            _n(
+                'Email whitelist saved: %d domain rule is active.',
+                'Email whitelist saved: %d domain rules are active.',
+                count($rules),
+                'acore-wp-plugin'
+            ),
+            count($rules)
+        ));
+    }
+
+    /**
+     * Registration section of the Redscale settings page. WordPress only offers
+     * a limited-email-domains option on multisite, and this CMS is a single
+     * site, so the whitelist lives in a redscale option instead.
+     */
+    private function renderEmailWhitelistSection()
+    {
+        $raw   = RedscaleEmailWhitelist::raw();
+        $rules = RedscaleEmailWhitelist::rules();
+        ?>
+        <hr />
+        <h2><?php esc_html_e('Registration email whitelist', 'acore-wp-plugin') ?></h2>
+        <p><?php esc_html_e('Restricts which email addresses may register on the website, on the WordPress registration form and on the shop account form alike. The game server and existing accounts are untouched. Leave the list empty to accept every email domain.', 'acore-wp-plugin') ?></p>
+        <?php if (!RedscaleEmailWhitelist::isConfigured()) : ?>
+            <p><strong><?php esc_html_e('No whitelist is configured: every email domain can register.', 'acore-wp-plugin') ?></strong></p>
+        <?php else : ?>
+            <p>
+                <?php printf(
+                    esc_html(_n('Currently active: %d domain rule.', 'Currently active: %d domain rules.', count($rules), 'acore-wp-plugin')),
+                    count($rules)
+                ); ?>
+                <?php foreach ($rules as $rule) : ?>
+                    <code><?php echo esc_html($rule); ?></code>
+                <?php endforeach; ?>
+            </p>
+        <?php endif; ?>
+        <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=' . self::PAGE_SLUG)); ?>" style="max-width:720px;">
+            <?php wp_nonce_field('redscale_email_whitelist_save', 'redscale_email_whitelist_nonce'); ?>
+            <table class="form-table" role="presentation">
+                <tbody>
+                    <tr>
+                        <th scope="row">
+                            <label for="redscale_email_whitelist"><?php esc_html_e('Allowed email domains (whitelist)', 'acore-wp-plugin') ?></label>
+                        </th>
+                        <td>
+                            <textarea name="redscale_email_whitelist" id="redscale_email_whitelist" rows="6" cols="50" class="large-text code" placeholder="gmail.com&#10;.example.com"><?php echo esc_textarea($raw); ?></textarea>
+                            <p class="description">
+                                <?php esc_html_e('One domain per line; commas and spaces work as separators too. "example.com" allows exactly @example.com, while a leading dot (".example.com") also allows its subdomains. Anything that cannot match a domain, such as a bare word, is dropped on save.', 'acore-wp-plugin') ?>
+                            </p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <button type="submit" name="redscale_email_whitelist_submit" value="1" class="button button-primary"><?php esc_html_e('Save whitelist', 'acore-wp-plugin'); ?></button>
+                <span class="description"><?php esc_html_e('Saving an empty list removes the restriction.', 'acore-wp-plugin'); ?></span>
+            </p>
+        </form>
         <?php
     }
 

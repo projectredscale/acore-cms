@@ -57,3 +57,4 @@ WordPress + WooCommerce CMS for AzerothCore. Docker Compose, PHP plugin (Doctrin
 | Debug SOAP | Check SOAP button in ACore Settings admin panel |
 | Debug DB | Check credentials in ACore Settings; verify MySQL user host permissions |
 | Add admin panel | New component class in Components/, require in boot.php |
+| Restrict registration email domains | Redscale Settings page, "Registration email whitelist" section; WP option `redscale_email_whitelist`, enforced by `Hooks/User/RedscaleEmailWhitelist.php` on both the WordPress and the WooCommerce registration paths |
