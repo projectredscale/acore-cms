@@ -38,7 +38,7 @@ WordPress + WooCommerce CMS for AzerothCore. Docker Compose, PHP plugin (Doctrin
   container that is `host.docker.internal:3341`, which is a development-only affordance and appears
   nowhere in production. In production the CMS reaches `ac-database` (auth, character and world),
   `ac-worldserver:7878` for SOAP and `wp-db` for WordPress, all by service name on the `redscale-net`
-  Docker network, and `ops/scripts/cms-configure.sh` writes exactly those values into the plugin's WP
+  Docker network, and a WP-CLI pass run once against the running stack writes exactly those values into the plugin's WP
   options.
 - Runtime container `acore-cms-php-1` (PHP 8.3); plugin bind-mounted at `/var/www/html/wp-content/plugins/acore-wp-plugins/`.
 - `acore_db_auth_*` WP options are unset by default, so `ACoreServices::I()` can't reach the auth DB until configured (deployment gap, not a code bug).

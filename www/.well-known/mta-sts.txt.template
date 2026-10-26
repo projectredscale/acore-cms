@@ -1,0 +1,23 @@
+# MTA-STS policy for the mail domain, served as
+# https://${MTA_STS_HOSTNAME}/.well-known/mta-sts.txt by cms-web.
+#
+# Rendered from the placeholders below into $HOST_ROOT/etc/mta-sts.txt, which
+# cms/compose.yml mounts at /srv/mtasts/.well-known/mta-sts.txt.
+#
+# Lines that begin with a hash are dropped at render time. RFC 8461 section 3.2
+# defines the served resource as key/value pairs and nothing else, with no comment
+# syntax, so this guidance stays in the template and never reaches the policy a
+# sender parses.
+#
+# The mx value has to match the hostname published in the domain's MX record. The
+# render takes MAIL_MX_HOSTNAME from host.env when it is set and otherwise uses
+# mail.<MAIL_DOMAIN>, which is the shape mail/compose.yml records for
+# stalwart. Confirm the hostname against DNS before this policy is served with
+# mode enforce: a mismatch makes senders refuse delivery to the domain.
+#
+# The _mta-sts TXT record for the domain has to exist as well, carrying a v=STSv1
+# and an id field, and it is DNS state rather than a file this tree renders.
+version: STSv1
+mode: enforce
+mx: ${MAIL_MX_HOSTNAME}
+max_age: 604800
