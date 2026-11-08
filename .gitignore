@@ -101,3 +101,6 @@ data/sql
 
 !.gitkeep
 
+
+# Task plans are local to a task and never part of this repository.
+.agents/plans/
